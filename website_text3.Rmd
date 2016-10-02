@@ -74,14 +74,13 @@ articles.df <- articles.df %>% mutate(textshort=strtrim(text,140))
 
 ```
 
-* Page: `r pgurls`
 * Css selector: `r cssnode`
 
 ```{r}
 articles.df %>% select(page,textshort)
 ```
 
-#### Analysis
+#### Count Words in Article
 
 ```{r}
 # count words in article
@@ -91,14 +90,39 @@ for(c in 1:nrow(articles.df)){
   articles.df$words[c] <- wordcount 
 }
 
-articles.df <- articles.df %>% mutate(size=if(words<300) "small" else "med")
-articles.df <- articles.df %>% mutate(size=round(words,-2))
+## testing ideas around buckets
+#articles.df <- articles.df %>% mutate(size=if(words<300) "small" else "med")
+#articles.df <- articles.df %>% mutate(size=round(words,-2))
 ```
 Word count for each article: 
 ```{r}
 #articles.df[,c(1,3)]
 articles.df %>% select(page,words)
 ```
+
+#### Add Publication Date
+```{r}
+artloop.df <- data.frame()
+for (p in 1:nrow(articles.df)){
+  pgurl <- pgurls[p]
+  htmlpg <- read_html(pgurl)
+  cssnode <- ".article_publish-date" 
+  articledate <- html_node(htmlpg,cssnode)
+  articledate <- html_text(articledate)
+  art.df <- data.frame("page"=pgurl,"pubdate"=articledate)
+  artloop.df <-rbind(artloop.df,art.df)
+}
+articles.df <- left_join(articles.df,artloop.df, by="page")
+articles.df$pubdate <- as.Date(articles.df$pubdate, format="%B %d, %Y")
+
+```
+
+Word count and publication date for each article:
+```{r}
+articles.df %>% select(page,words,pubdate)
+```
+
+#### Analysis
 
 Word Count stats
 ```{r}
@@ -110,7 +134,7 @@ medwords <- median(articles.df$words)
 * Mean word count: `r meanwords`
 * Median word count: `r medwords`
 
-Historgram
+Histogram
 ```{r}
 library(ggplot2)
 
