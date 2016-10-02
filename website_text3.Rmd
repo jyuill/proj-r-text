@@ -66,11 +66,16 @@ for (p in 1:nrow(articles.df)){
   articletext <- html_text(article)
   articletext <- articletext[1:(length(articletext)-3)]
   articlesingle <- paste(articletext, collapse=" ")
-  art.df <- data.frame("page"=pgurl,"text"=articlesingle)
+  cssnode <- ".article_publish-date" 
+  articledate <- html_node(htmlpg,cssnode)
+  articledate <- html_text(articledate)
+  art.df <- data.frame("page"=pgurl,"text"=articlesingle,"pubdate"=articledate)
   artloop.df <-rbind(artloop.df,art.df)
 }
 articles.df <- artloop.df
-articles.df <- articles.df %>% mutate(textshort=strtrim(text,140))
+articles.df$page <- sub("https://","",articles.df$page)
+articles.df <- articles.df %>% mutate(textshort=strtrim(text,20))
+articles.df$pubdate <- as.Date(articles.df$pubdate, format="%B %d, %Y")
 
 ```
 
@@ -89,42 +94,21 @@ for(c in 1:nrow(articles.df)){
   wordcount <- sapply(gregexpr("[[:alpha:]]+", articles.df[c,2]), function(x) sum(x > 0))
   articles.df$words[c] <- wordcount 
 }
-
-## testing ideas around buckets
-#articles.df <- articles.df %>% mutate(size=if(words<300) "small" else "med")
-#articles.df <- articles.df %>% mutate(size=round(words,-2))
-df %>%
-  mutate(g = ifelse(a == 2 | a == 5 | a == 7 | (a == 1 & b == 4), 2,
-               ifelse(a == 0 | a == 1 | a == 4 | a == 3 |  c == 4, 3, NA)))
-articles.df <- articles.df %>% mutate(size=ifelse(words<250,"small",
-                                                  ifelse(words<500,"med","lg")))
 ```
-Word count for each article: 
+Publication date and word count for each article: 
 ```{r}
 #articles.df[,c(1,3)]
-articles.df %>% select(page,words)
+articles.df %>% select(page,pubdate,words)
 ```
 
-#### Add Publication Date
-```{r}
-artloop.df <- data.frame()
-for (p in 1:nrow(articles.df)){
-  pgurl <- pgurls[p]
-  htmlpg <- read_html(pgurl)
-  cssnode <- ".article_publish-date" 
-  articledate <- html_node(htmlpg,cssnode)
-  articledate <- html_text(articledate)
-  art.df <- data.frame("page"=pgurl,"pubdate"=articledate)
-  artloop.df <-rbind(artloop.df,art.df)
-}
-articles.df <- left_join(articles.df,artloop.df, by="page")
-articles.df$pubdate <- as.Date(articles.df$pubdate, format="%B %d, %Y")
+Set buckets based on word count:
 
-```
-
-Word count and publication date for each article:
 ```{r}
-articles.df %>% select(page,words,pubdate)
+## testing ideas around buckets
+articles.df <- articles.df %>% mutate(size=ifelse(words<250,"small",
+                                                  ifelse(words<500,"med","lg")))
+articles.df %>% select(page,words,size)
+
 ```
 
 #### Analysis
@@ -148,5 +132,4 @@ ggplot(articles.df, aes(words))+geom_histogram(binwidth = 200)+
 ```
 
 ### Additional opportunities
-* Could create buckets of word length and load into custom dimension
-* Could identify posts with images
+* Could identify posts with images - using count of 'img'

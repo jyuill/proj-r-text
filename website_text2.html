@@ -127,8 +127,15 @@ $(document).ready(function () {
 <div id="process" class="section level4">
 <h4>Process</h4>
 <ol style="list-style-type: decimal">
-<li>Select URL and set as a variable</li>
-<li>Use rvest’s ‘read_html’ function to scrape the page and store it in a variable</li>
+<li>Select URLs and load them into data frame</li>
+<li>Set up a loop to process each URL by:
+<ul>
+<li>using rvest’s ‘read_html’ function to scrape the page and store it in a variable</li>
+<li>apply a specificed CSS selector to get target content</li>
+<li>use html_text to remove HTML tags</li>
+<li>remove any common unwanted content - standard footers, etc, using standard subsetting</li>
+<li>collapes all text into single character string</li>
+</ul></li>
 <li>Use Chrome plugin <a href="https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=en">Selector Gadget</a> to identify relevant CSS selector for target content</li>
 <li>Extract the CSS selector from page data using html_node(s) (singular if first node, plural if all)</li>
 <li>Remove html tags using html_text

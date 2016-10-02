@@ -29,13 +29,18 @@ library(dplyr)
 
 1. Select URLs and load them into data frame
 2. Set up a loop to process each URL by:
-    + scraping the target web page by using rvest's 'read_html' function
-    + applying a CSS selector to get target content
-    + removing HTM tags with html_text
-    + removing any common unwanted content - standard footers, etc, using standard subsetting
-    + collapsing all text into single character string
-3. Over-write the original data frame with the new data compiled in the loop
-4. Analysze the results and/or combine with GA metrics for the URLs for further analysis
+    + using rvest's 'read_html' function to scrape the page and store it in a variable
+    + apply a specificed CSS selector to get target content
+    + use html_text to remove HTML tags
+    + remove any common unwanted content - standard footers, etc, using standard subsetting
+    + collapes all text into single character string
+3. Use Chrome plugin [Selector Gadget](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=en) to identify relevant CSS selector for target content
+4. Extract the CSS selector from page data using html_node(s) (singular if first node, plural if all)
+5. Remove html tags using html_text
+    + Generates character vector with each node as an item
+6. Remove any extraneous text items - standard footers, etc
+    + Use standard susetting techniques
+7. Collapse all the items in the list into a single paragraph
 
 ```{r}
 pgurls <- c("https://www.needforspeed.com/news/fiveways", "https://www.needforspeed.com/news/under-the-hood-7")

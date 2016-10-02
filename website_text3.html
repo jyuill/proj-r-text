@@ -141,81 +141,52 @@ $(document).ready(function () {
 <li>Analysze the results</li>
 </ol>
 <ul>
-<li>Css selector: p</li>
+<li>Css selector: .article_publish-date</li>
 </ul>
-<pre><code>##                                                          page
-## 1                  https://www.needforspeed.com/news/fiveways
-## 2          https://www.needforspeed.com/news/under-the-hood-7
-## 3          https://www.needforspeed.com/news/nfs-enters-vault
-## 4    https://www.needforspeed.com/news/game-update-speedlists
-## 5  https://www.needforspeed.com/news/origin-access-trial-date
-## 6      https://www.needforspeed.com/news/game-update-hot-rods
-## 7         https://www.needforspeed.com/news/gamescom-gameplay
-## 8                https://www.needforspeed.com/news/five-icons
-## 9          https://www.needforspeed.com/news/gamescom15-recap
-## 10                https://www.needforspeed.com/news/the-icons
-## 11         https://www.needforspeed.com/news/gamescom-trailer
-## 12           https://www.needforspeed.com/news/deluxe-edition
-##                                                                                                                                       textshort
-## 1  Play your way; Speed, Style, Build, Crew and Outlaw.   How will they remember you? In Need for Speed that all depends on how you drive. In V
-## 2  Under the Hood #7   Since we released Need for Speed last November, weâve been humbled by the support from our players and the ongoing col
-## 3  Play as much as you want   Are you an EA Access or Origin Access member yet? If not, here's a good reason to change that! On July 12th, Need
-## 4  Under the Hood #6    Competitive Multiplayer, Prestige Mode and Activities are rolling into the next Living Game update, coming April 27th f
-## 5  Play Need for Speed on PC early!   Need for Speed launches onto PC on March 15th and members of Origin Access can play before itâs release
-## 6  Under the Hood #5   Manual Transmission, new cars, more garage space and Drag Racing. All things you've been asking for and all of which wil
-## 7  Looking for brand new Need for Speed gameplay? The community has you covered.   Looking for some new gameplay footage of Need for Speed? You
-## 8  We dig into the five automotive icons that call Ventura Bay their home   With the November 3rd release date fast approaching, it's time we t
-## 9  We take a look back at some of the best bits of Gamescom and recap some bits you may have missed.   Wow, gamescom was a total blast! You cam
-## 10 Introducing the five icons that youâll meet on your journey to become the ultimate icon   Ventura Bay is home to five real world automotiv
-## 11 Watch our latest trailer, officially unveiled at Gamescom 2015   Weâve descended into Cologne for gamescom and that can only mean one thin
-## 12 A familiar face returns as the tricked out starter car in the Deluxe Edition   When it comes to cars there are many fan favorites spread acr</code></pre>
+<pre><code>##                                                  page            textshort
+## 1                  www.needforspeed.com/news/fiveways Play your way; Speed
+## 2          www.needforspeed.com/news/under-the-hood-7 Under the Hood #7   
+## 3          www.needforspeed.com/news/nfs-enters-vault Play as much as you 
+## 4    www.needforspeed.com/news/game-update-speedlists Under the Hood #6   
+## 5  www.needforspeed.com/news/origin-access-trial-date Play Need for Speed 
+## 6      www.needforspeed.com/news/game-update-hot-rods Under the Hood #5   
+## 7         www.needforspeed.com/news/gamescom-gameplay Looking for brand ne
+## 8                www.needforspeed.com/news/five-icons We dig into the five
+## 9          www.needforspeed.com/news/gamescom15-recap We take a look back 
+## 10                www.needforspeed.com/news/the-icons Introducing the five
+## 11         www.needforspeed.com/news/gamescom-trailer Watch our latest tra
+## 12           www.needforspeed.com/news/deluxe-edition A familiar face retu</code></pre>
 </div>
 <div id="count-words-in-article" class="section level4">
 <h4>Count Words in Article</h4>
-<p>Word count for each article:</p>
-<pre><code>##                                                          page words
-## 1                  https://www.needforspeed.com/news/fiveways   635
-## 2          https://www.needforspeed.com/news/under-the-hood-7   432
-## 3          https://www.needforspeed.com/news/nfs-enters-vault   189
-## 4    https://www.needforspeed.com/news/game-update-speedlists   510
-## 5  https://www.needforspeed.com/news/origin-access-trial-date   294
-## 6      https://www.needforspeed.com/news/game-update-hot-rods   691
-## 7         https://www.needforspeed.com/news/gamescom-gameplay   143
-## 8                https://www.needforspeed.com/news/five-icons  1063
-## 9          https://www.needforspeed.com/news/gamescom15-recap   323
-## 10                https://www.needforspeed.com/news/the-icons   355
-## 11         https://www.needforspeed.com/news/gamescom-trailer   185
-## 12           https://www.needforspeed.com/news/deluxe-edition   284</code></pre>
-</div>
-<div id="add-publication-date" class="section level4">
-<h4>Add Publication Date</h4>
-<p>Word count and publication date for each article:</p>
-<pre><code>##                                                          page words
-## 1                  https://www.needforspeed.com/news/fiveways   635
-## 2          https://www.needforspeed.com/news/under-the-hood-7   432
-## 3          https://www.needforspeed.com/news/nfs-enters-vault   189
-## 4    https://www.needforspeed.com/news/game-update-speedlists   510
-## 5  https://www.needforspeed.com/news/origin-access-trial-date   294
-## 6      https://www.needforspeed.com/news/game-update-hot-rods   691
-## 7         https://www.needforspeed.com/news/gamescom-gameplay   143
-## 8                https://www.needforspeed.com/news/five-icons  1063
-## 9          https://www.needforspeed.com/news/gamescom15-recap   323
-## 10                https://www.needforspeed.com/news/the-icons   355
-## 11         https://www.needforspeed.com/news/gamescom-trailer   185
-## 12           https://www.needforspeed.com/news/deluxe-edition   284
-##       pubdate
-## 1  2015-09-03
-## 2  2016-05-10
-## 3  2016-07-06
-## 4  2016-04-25
-## 5  2016-03-03
-## 6  2016-03-01
-## 7  2015-08-21
-## 8  2015-08-19
-## 9  2015-08-10
-## 10 2015-08-05
-## 11 2015-08-05
-## 12 2015-07-31</code></pre>
+<p>Publication date and word count for each article:</p>
+<pre><code>##                                                  page    pubdate words
+## 1                  www.needforspeed.com/news/fiveways 2015-09-03   635
+## 2          www.needforspeed.com/news/under-the-hood-7 2016-05-10   432
+## 3          www.needforspeed.com/news/nfs-enters-vault 2016-07-06   189
+## 4    www.needforspeed.com/news/game-update-speedlists 2016-04-25   510
+## 5  www.needforspeed.com/news/origin-access-trial-date 2016-03-03   294
+## 6      www.needforspeed.com/news/game-update-hot-rods 2016-03-01   691
+## 7         www.needforspeed.com/news/gamescom-gameplay 2015-08-21   143
+## 8                www.needforspeed.com/news/five-icons 2015-08-19  1063
+## 9          www.needforspeed.com/news/gamescom15-recap 2015-08-10   323
+## 10                www.needforspeed.com/news/the-icons 2015-08-05   355
+## 11         www.needforspeed.com/news/gamescom-trailer 2015-08-05   185
+## 12           www.needforspeed.com/news/deluxe-edition 2015-07-31   284</code></pre>
+<p>Set buckets based on word count:</p>
+<pre><code>##                                                  page words  size
+## 1                  www.needforspeed.com/news/fiveways   635    lg
+## 2          www.needforspeed.com/news/under-the-hood-7   432   med
+## 3          www.needforspeed.com/news/nfs-enters-vault   189 small
+## 4    www.needforspeed.com/news/game-update-speedlists   510    lg
+## 5  www.needforspeed.com/news/origin-access-trial-date   294   med
+## 6      www.needforspeed.com/news/game-update-hot-rods   691    lg
+## 7         www.needforspeed.com/news/gamescom-gameplay   143 small
+## 8                www.needforspeed.com/news/five-icons  1063    lg
+## 9          www.needforspeed.com/news/gamescom15-recap   323   med
+## 10                www.needforspeed.com/news/the-icons   355   med
+## 11         www.needforspeed.com/news/gamescom-trailer   185 small
+## 12           www.needforspeed.com/news/deluxe-edition   284   med</code></pre>
 </div>
 <div id="analysis" class="section level4">
 <h4>Analysis</h4>
@@ -230,8 +201,7 @@ $(document).ready(function () {
 <div id="additional-opportunities" class="section level3">
 <h3>Additional opportunities</h3>
 <ul>
-<li>Could create buckets of word length and load into custom dimension</li>
-<li>Could identify posts with images</li>
+<li>Could identify posts with images - using count of ‘img’</li>
 </ul>
 </div>
 
