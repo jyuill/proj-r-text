@@ -1,0 +1,75 @@
+---
+title: "Using R to Scrape Website Text, pt 1"
+author: "John Yuill"
+date: "October 1, 2016"
+output: html_document
+---
+
+```{r, global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+
+
+```
+
+### Scraping Web Pages to Extract Text for Analysis
+
+Basic demonstration of how to scrape web pages for text analysis.
+
+* Using rvest package
+    + note that XML package also has to be installed
+    
+```{r}
+library(rvest)
+library(dplyr)
+
+
+```
+
+#### Process
+
+1. Select URL and set as a variable
+2. Use rvest's 'read_html' function to scrape the page and store it in a variable
+3. Use Chrome plugin [Selector Gadget](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=en) to identify relevant CSS selector for target content
+4. Extract the CSS selector from page data using html_node(s) (singular if first node, plural if all)
+5. Remove html tags using html_text
+    + Generates character vector with each node as an item
+6. Remove any extraneous text items - standard footers, etc
+    + Use standard susetting techniques
+7. Collapse all the items in the list into a single paragraph
+
+```{r}
+pgurl <- "https://www.needforspeed.com/news/fiveways"
+htmlpg <- read_html(pgurl)
+cssnode <- "p" 
+article <- html_nodes(htmlpg,cssnode)
+articletext <- html_text(article)
+articletext <- articletext[1:(length(articletext)-3)]
+
+articlesingle <- paste(articletext, collapse=" ")
+#articleframe <- data.frame(articletext)
+
+
+```
+
+* Page: `r pgurl`
+* Css selector: `r cssnode`
+
+```{r}
+articlesingle
+```
+
+#### Analysis
+
+```{r}
+# count words in article
+wordcount <- sapply(gregexpr("[[:alpha:]]+", articlesingle), function(x) sum(x > 0))
+```
+* word count: `r wordcount`
+
+
+#### References
+
+* [rvest Easy Scraping with R](https://blog.rstudio.org/2014/11/24/rvest-easy-web-scraping-with-r/)
+* [Webscraping with R and rvest (video)](http://www.computerworld.com/article/2909560/business-intelligence/web-scraping-with-r-and-rvest-includes-video-code.html)
+* [Count the Number of Words in a String in R](http://stackoverflow.com/questions/8920145/count-the-number-of-words-in-a-string-in-r)
+* [R Code: Reading, Preprocessing, Counting Text](http://www.katrinerk.com/courses/words-in-a-haystack-an-introductory-statistics-course/schedule-words-in-a-haystack/r-code-the-text-mining-package) - not used here but potentially good reference for more sophisticated processing/analysis 

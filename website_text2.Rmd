@@ -1,0 +1,94 @@
+---
+title: "Using R to Scrape Website Text, pt 2"
+author: "John Yuill"
+date: "October 1, 2016"
+output: html_document
+---
+
+```{r, global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+
+
+```
+
+### Scraping MULTIPLE Website Pages to Extract Text for Analysis
+
+Enhancement over pt 1, basic approach. This demo shows how to scrape info from multiple pages.
+
+* Using rvest package
+    + note that XML package also has to be installed
+    
+```{r}
+library(rvest)
+library(dplyr)
+
+
+```
+
+#### Process
+
+1. Select URLs and load them into data frame
+2. Set up a loop to process each URL by:
+    + scraping the target web page by using rvest's 'read_html' function
+    + applying a CSS selector to get target content
+    + removing HTM tags with html_text
+    + removing any common unwanted content - standard footers, etc, using standard subsetting
+    + collapsing all text into single character string
+3. Over-write the original data frame with the new data compiled in the loop
+4. Analysze the results and/or combine with GA metrics for the URLs for further analysis
+
+```{r}
+pgurls <- c("https://www.needforspeed.com/news/fiveways", "https://www.needforspeed.com/news/under-the-hood-7")
+
+# set up data frame to hold page urls - more scalable
+articles.df <- data.frame("page"=pgurls)
+
+artloop.df <- data.frame() # temporary data frame to use in loop
+
+for (p in 1:nrow(articles.df)){
+  pgurl <- pgurls[p]
+  htmlpg <- read_html(pgurl)
+  cssnode <- "p" 
+  article <- html_nodes(htmlpg,cssnode)
+  articletext <- html_text(article)
+  articletext <- articletext[1:(length(articletext)-4)]
+  articlesingle <- paste(articletext, collapse=" ")
+  art.df <- data.frame("page"=pgurl,"text"=articlesingle)
+  artloop.df <-rbind(artloop.df,art.df)
+}
+articles.df <- artloop.df
+articles.df <- articles.df %>% mutate(textshort=strtrim(text,140))
+
+```
+
+* Page: `r pgurls`
+* Css selector: `r cssnode`
+
+```{r}
+articles.df %>% select(page,textshort)
+```
+
+#### Analysis
+
+```{r}
+# count words in article
+
+for(c in 1:nrow(articles.df)){
+  wordcount <- sapply(gregexpr("[[:alpha:]]+", articles.df[c,2]), function(x) sum(x > 0))
+  articles.df$words[c] <- wordcount 
+}
+
+```
+Word count for each article: 
+```{r}
+#articles.df[,c(1,3)]
+articles.df %>% select(page,words)
+```
+
+URLs can be used to join with metrics from GA for further analysis.
+
+#### References
+
+* [rvest Easy Scraping with R](https://blog.rstudio.org/2014/11/24/rvest-easy-web-scraping-with-r/)
+* [Webscraping with R and rvest (video)](http://www.computerworld.com/article/2909560/business-intelligence/web-scraping-with-r-and-rvest-includes-video-code.html)
+* [Count the Number of Words in a String in R](http://stackoverflow.com/questions/8920145/count-the-number-of-words-in-a-string-in-r)
