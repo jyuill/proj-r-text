@@ -47,7 +47,10 @@ pgurls <- c("https://www.needforspeed.com/news/fiveways",
             "https://www.needforspeed.com/news/game-update-hot-rods",
            "https://www.needforspeed.com/news/gamescom-gameplay",
            "https://www.needforspeed.com/news/five-icons",
-           "https://www.needforspeed.com/news/gamescom15-recap"
+           "https://www.needforspeed.com/news/gamescom15-recap",
+           "https://www.needforspeed.com/news/the-icons",
+           "https://www.needforspeed.com/news/gamescom-trailer",
+           "https://www.needforspeed.com/news/deluxe-edition"
             )
 
 # set up data frame to hold page urls - more scalable
@@ -88,6 +91,8 @@ for(c in 1:nrow(articles.df)){
   articles.df$words[c] <- wordcount 
 }
 
+articles.df <- articles.df %>% mutate(size=if(words<300) "small" else "med")
+articles.df <- articles.df %>% mutate(size=round(words,-2))
 ```
 Word count for each article: 
 ```{r}
@@ -109,6 +114,10 @@ Historgram
 ```{r}
 library(ggplot2)
 
-ggplot(articles.df, aes(words))+geom_histogram(binwidth = 200)
+ggplot(articles.df, aes(words))+geom_histogram(binwidth = 200)+
+  theme_bw()
 ```
 
+### Additional opportunities
+* Could create buckets of word length and load into custom dimension
+* Could identify posts with images
