@@ -14,6 +14,7 @@ knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 ### Scraping Web Pages to Extract Text for Analysis
 
 Basic demonstration of how to scrape web pages for text analysis.
+* Includes example of counting images
 
 * Using rvest package
     + note that XML package also has to be installed
@@ -37,6 +38,7 @@ library(dplyr)
     + Use standard susetting techniques
 7. Collapse all the items in the list into a single paragraph
 
+#### Getting text from article
 ```{r}
 pgurl <- "https://www.needforspeed.com/news/fiveways"
 htmlpg <- read_html(pgurl)
@@ -58,13 +60,27 @@ articlesingle <- paste(articletext, collapse=" ")
 articlesingle
 ```
 
-#### Analysis
-
+Word count
 ```{r}
 # count words in article
 wordcount <- sapply(gregexpr("[[:alpha:]]+", articlesingle), function(x) sum(x > 0))
 ```
 * word count: `r wordcount`
+
+
+#### Counting Images on page
+```{r}
+#pgurl <- "https://www.needforspeed.com/news/deluxe-edition"
+pgurl <- "https://www.needforspeed.com/news/the-icons"
+htmlpg <- read_html(pgurl)
+cssnode <- ".article_body img" 
+image <- html_nodes(htmlpg,cssnode)
+imgnum <- length(image)
+
+```
+* Page: `r pgurl`
+* CSS selector: `r cssnode`
+* No. of images: `r imgnum`
 
 
 #### References
