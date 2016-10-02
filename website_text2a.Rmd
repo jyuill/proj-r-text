@@ -56,7 +56,7 @@ for (p in 1:nrow(articles.df)){
   cssnode <- "p" 
   article <- html_nodes(htmlpg,cssnode)
   articletext <- html_text(article)
-  articletext <- articletext[1:(length(articletext)-4)]
+  articletext <- articletext[1:(length(articletext)-3)]
   articlesingle <- paste(articletext, collapse=" ")
   art.df <- data.frame("page"=pgurl,"text"=articlesingle)
   artloop.df <-rbind(artloop.df,art.df)

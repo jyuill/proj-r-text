@@ -22,7 +22,6 @@ Enhancement over pt 2, with more pages and more analysis.
 library(rvest)
 library(dplyr)
 
-
 ```
 
 #### Process
@@ -45,7 +44,10 @@ pgurls <- c("https://www.needforspeed.com/news/fiveways",
             "https://www.needforspeed.com/news/nfs-enters-vault",
             "https://www.needforspeed.com/news/game-update-speedlists",
             "https://www.needforspeed.com/news/origin-access-trial-date",
-            "https://www.needforspeed.com/news/game-update-hot-rods"
+            "https://www.needforspeed.com/news/game-update-hot-rods",
+           "https://www.needforspeed.com/news/gamescom-gameplay",
+           "https://www.needforspeed.com/news/five-icons",
+           "https://www.needforspeed.com/news/gamescom15-recap"
             )
 
 # set up data frame to hold page urls - more scalable
@@ -59,7 +61,7 @@ for (p in 1:nrow(articles.df)){
   cssnode <- "p" 
   article <- html_nodes(htmlpg,cssnode)
   articletext <- html_text(article)
-  articletext <- articletext[1:(length(articletext)-4)]
+  articletext <- articletext[1:(length(articletext)-3)]
   articlesingle <- paste(articletext, collapse=" ")
   art.df <- data.frame("page"=pgurl,"text"=articlesingle)
   artloop.df <-rbind(artloop.df,art.df)
@@ -93,10 +95,20 @@ Word count for each article:
 articles.df %>% select(page,words)
 ```
 
-URLs can be used to join with metrics from GA for further analysis.
+Word Count stats
+```{r}
+meanwords <- mean(articles.df$words)
+medwords <- median(articles.df$words)
 
-#### References
+```
 
-* [rvest Easy Scraping with R](https://blog.rstudio.org/2014/11/24/rvest-easy-web-scraping-with-r/)
-* [Webscraping with R and rvest (video)](http://www.computerworld.com/article/2909560/business-intelligence/web-scraping-with-r-and-rvest-includes-video-code.html)
-* [Count the Number of Words in a String in R](http://stackoverflow.com/questions/8920145/count-the-number-of-words-in-a-string-in-r)
+* Mean word count: `r meanwords`
+* Median word count: `r medwords`
+
+Historgram
+```{r}
+library(ggplot2)
+
+ggplot(articles.df, aes(words))+geom_histogram(binwidth = 200)
+```
+
