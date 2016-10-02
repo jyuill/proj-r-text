@@ -93,6 +93,11 @@ for(c in 1:nrow(articles.df)){
 ## testing ideas around buckets
 #articles.df <- articles.df %>% mutate(size=if(words<300) "small" else "med")
 #articles.df <- articles.df %>% mutate(size=round(words,-2))
+df %>%
+  mutate(g = ifelse(a == 2 | a == 5 | a == 7 | (a == 1 & b == 4), 2,
+               ifelse(a == 0 | a == 1 | a == 4 | a == 3 |  c == 4, 3, NA)))
+articles.df <- articles.df %>% mutate(size=ifelse(words<250,"small",
+                                                  ifelse(words<500,"med","lg")))
 ```
 Word count for each article: 
 ```{r}
