@@ -1,0 +1,76 @@
+---
+title: "Using R to Scrape Website json ld"
+author: "John Yuill"
+date: "October 29, 2017"
+output: html_document
+---
+
+```{r, global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+
+## load packages
+library(rvest)
+library(jsonlite)
+library(stringr)
+library(dplyr)
+
+```
+
+### Scraping MULTIPLE Website Pages to Extract JSON-LD for Analysis
+
+* Using rvest package
+    + note that XML package also has to be installed
+    
+References:
+* https://www.kdnuggets.com/2017/06/web-scraping-r-online-food-blogs.html
+    
+#### Process
+
+1. Select URLs and load them into data frame - preferably from a csv file as done here
+2. Set up a loop to process each URL by:
+    + scraping the target web page by using rvest's 'read_html' function
+    + 
+3. Add new data compiled into original data frame
+4. Analysze the results 
+
+```{r}
+## load article URLs
+pages.df <- read.csv("input/NFS-articles.csv", stringsAsFactors = FALSE)
+
+pageloop.df <- data.frame() # temporary data frame to use in loop
+p <- 1 ## temporary for testing before using full loop
+for (p in 1:nrow(pages.df)){
+  pgurl <- pages.df$page[p]
+  htmlpg <- read_html(pgurl)
+  item <- "script"
+  html_nodes(htmlpg, item) %>% head()
+  head.scripts <- html_nodes(htmlpg, "script") %>% head()
+  loc.json <- which(str_detect(head.scripts, "application/ld"))
+  jsonld <- fromJSON(html_text(head.scripts[loc.json]))
+  pg.type <- jsonld[2]
+  pg.headline <- jsonld$headline
+  pg.date.pub <- jsonld$datePublished
+  pg.date.mod <- jsonld$dateModified
+  pg.detail.df <- data.frame("page"=pgurl,
+                       "pg.type"=pg.type[[1]],
+                       "headline"=pg.headline,
+                       "date.published"=pg.date.pub,
+                       "date.modified"=pg.date.mod)
+  pageloop.df <-rbind(pageloop.df,pg.detail.df)
+}
+pages.detail.df <- pageloop.df
+
+## convert dates to shorter format (remove timestamp)
+pages.detail.df$date.published <- as.Date(pages.detail.df$date.published)
+pages.detail.df$date.modified <- as.Date(pages.detail.df$date.modified)
+
+## shorten URLs as much as possible, based on common pattern
+pages.detail.df$url.short <- sub("https://www.ea.com/games/need-for-speed/need-for-speed-payback/","",pages.detail.df$page)
+
+```
+
+Results:
+
+```{r}
+pages.detail.df %>% select(headline,pg.type,date.published)
+```
