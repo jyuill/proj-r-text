@@ -1,0 +1,152 @@
+---
+title: 'Datacamp: Intro to Text Analysis in R'
+output:
+  html_document:
+    df_print: paged
+date: "`r Sys.Date()`"
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(message=FALSE,
+                      warning=FALSE)
+library(tidyverse)
+library(tidytext)
+library(lubridate)
+```
+
+[Intro to Text Analysis in R](https://learn.datacamp.com/courses/introduction-to-text-analysis-in-r)
+
+Part of Skill Track: [Text Mining with R](https://learn.datacamp.com/skill-tracks/text-mining-with-r)
+
+## Get data
+
+Using c&c twitter data, since don't have access to data from course, which is also twitter data.
+
+```{r, GET DATA}
+twitter_data <- read_csv('input/cnc-twitter.csv')
+twitter_data$postdate <- mdy(twitter_data$postdate)
+```
+
+## Summarize
+
+```{r}
+ntweet <- nrow(twitter_data)
+ntweeters <- length(unique(twitter_data$screenName))
+cat(ntweet,"tweets by",ntweeters,"tweeters \n")
+cat("How many retweets? (TRUE)")
+table(twitter_data$isRetweet)
+
+
+```
+
+
+```{r}
+rtweets <- twitter_data %>% count(isRetweet)
+
+```
+
+## Tokenize
+
+Tokenize individual words in tweet
+
+```{r, TOKENIZE}
+tweet_token <- twitter_data %>%
+  unnest_tokens(word, text)
+
+tweet_token <- tweet_token %>% 
+  count(word) %>% arrange(desc(n))
+
+head(tweet_token, 10)
+
+```
+
+```{r}
+tweet_token <- twitter_data %>% 
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words)
+
+tweet_token_all <- tweet_token %>% 
+  count(word) %>% arrange(desc(n))
+head(tweet_token_all, 10)
+
+tweet_token_nrt <- tweet_token %>% 
+  filter(isRetweet==FALSE) %>%
+  count(word) %>% arrange(desc(n))
+head(tweet_token_nrt)
+
+tweet_token_rt <- tweet_token %>% 
+  filter(isRetweet==TRUE) %>%
+  count(word) %>% arrange(desc(n))
+
+head(tweet_token_rt, 10)
+```
+
+## Visualize
+
+```{r}
+tweet_chart <- tweet_token %>% filter(n>1000) 
+ggplot(tweet_chart, aes(x=word, y=n))+geom_col()+
+  coord_flip()
+```
+
+## Remove custom stop words
+
+Specify stop words that are specific to this data and are not very informative. Can add them to the existing default stop word list for removing.
+
+```{r}
+## use tribble to create a data frame of custom stop words
+stop_words_cust <- tribble(~word, ~lexicon,
+        "conquer","CUSTOM",
+        "command","CUSTOM",
+        "https","CUSTOM",
+        "rt","CUSTOM",
+        "t.co","CUSTOM"
+        )
+
+## join to existing default stop words
+stop_words2 <- bind_rows(stop_words, stop_words_cust)
+
+## anti-join with new stop words
+
+tweet_token <- twitter_data %>% 
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words2)
+
+```
+
+Use new token table to split up into RT and not RT and count occurrences of words.
+
+```{r}
+tweet_token_all <- tweet_token %>% 
+  count(word) %>% arrange(desc(n))
+head(tweet_token_all, 10)
+
+tweet_token_nrt <- tweet_token %>% 
+  filter(isRetweet==FALSE) %>%
+  count(word) %>% arrange(desc(n))
+head(tweet_token_nrt)
+
+tweet_token_rt <- tweet_token %>% 
+  filter(isRetweet==TRUE) %>%
+  count(word) %>% arrange(desc(n))
+
+head(tweet_token_rt, 10)
+```
+
+```{r}
+tweet_token_nrt$rt <- FALSE
+tweet_token_rt$rt <- TRUE
+
+tweet_token_rt_all <- bind_rows(tweet_token_nrt, tweet_token_rt)
+tweet_token_rt_all <- tweet_token_rt_all %>% mutate(
+  word=fct_reorder(word, n)
+)
+```
+
+
+```{r}
+tweet_chart <- tweet_token_rt_all %>% filter(n>200) 
+ggplot(tweet_chart, aes(x=word, y=n, fill=rt))+geom_col(position='dodge')+
+  coord_flip()
+```
+
