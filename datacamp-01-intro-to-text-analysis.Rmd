@@ -84,7 +84,7 @@ head(tweet_token_rt, 10)
 ## Visualize
 
 ```{r}
-tweet_chart <- tweet_token %>% filter(n>1000) 
+tweet_chart <- tweet_token_all %>% filter(n>1000) 
 ggplot(tweet_chart, aes(x=word, y=n))+geom_col()+
   coord_flip()
 ```
