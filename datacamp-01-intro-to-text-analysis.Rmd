@@ -12,6 +12,7 @@ knitr::opts_chunk$set(message=FALSE,
 library(tidyverse)
 library(tidytext)
 library(lubridate)
+library(wordcloud)
 ```
 
 [Intro to Text Analysis in R](https://learn.datacamp.com/courses/introduction-to-text-analysis-in-r)
@@ -50,6 +51,7 @@ rtweets <- twitter_data %>% count(isRetweet)
 Tokenize individual words in tweet
 
 ```{r, TOKENIZE}
+## ALL WORDS
 tweet_token <- twitter_data %>%
   unnest_tokens(word, text)
 
@@ -60,26 +62,39 @@ head(tweet_token, 10)
 
 ```
 
-```{r}
+```{r, STOP WORDS}
+## REMOVE STOP WORDS
+## stop words are built in to the tidytext pkg
 tweet_token <- twitter_data %>% 
   unnest_tokens(word, text) %>%
   anti_join(stop_words)
 
+## get word counts after removing stop words
 tweet_token_all <- tweet_token %>% 
   count(word) %>% arrange(desc(n))
 head(tweet_token_all, 10)
 
+```
+
+## Retweets vs Non-Retweets
+
+Separate retweets from non-retweets to count words that appear in each and compare.
+
+```{r}
+## COUNT FOR NON-RETWEETS
 tweet_token_nrt <- tweet_token %>% 
   filter(isRetweet==FALSE) %>%
   count(word) %>% arrange(desc(n))
 head(tweet_token_nrt)
 
+## COUNT FOR RETWEETS
 tweet_token_rt <- tweet_token %>% 
   filter(isRetweet==TRUE) %>%
   count(word) %>% arrange(desc(n))
 
 head(tweet_token_rt, 10)
 ```
+
 
 ## Visualize
 
@@ -134,19 +149,169 @@ head(tweet_token_rt, 10)
 ```
 
 ```{r}
+## Set columns to identify retweet vs non-retweet
 tweet_token_nrt$rt <- FALSE
 tweet_token_rt$rt <- TRUE
 
+## Join retweets and non-retweets
 tweet_token_rt_all <- bind_rows(tweet_token_nrt, tweet_token_rt)
+
+## reorder for plotting
 tweet_token_rt_all <- tweet_token_rt_all %>% mutate(
   word=fct_reorder(word, n)
 )
 ```
 
 
-```{r}
+```{r, VISUALIZE 2}
 tweet_chart <- tweet_token_rt_all %>% filter(n>200) 
 ggplot(tweet_chart, aes(x=word, y=n, fill=rt))+geom_col(position='dodge')+
   coord_flip()
+```
+
+Visualize using faceting
+
+```{r, VISUALIZE FACET}
+ggplot(tweet_chart, aes(x=word, y=n, fill=rt))+geom_col()+
+  facet_grid(.~rt, scales="free_x")+
+  coord_flip()+
+  theme(legend.position = 'none')
+
+## alternative way to hide legend
+#ggplot(tweet_chart, aes(x=word, y=n, fill=rt))+geom_col(show.legend=FALSE)+
+#  facet_grid(.~rt, scales="free_x")+
+#  coord_flip()
+
+## facet_wrap instead of facet_grid, using free_y to size spacing in y axis
+ggplot(tweet_chart, aes(x=word, y=n, fill=rt))+geom_col(show.legend=FALSE)+
+  facet_wrap(~rt, scales="free_y")+
+  coord_flip()
+
+
+
+```
+
+## Word Clouds ;P
+
+```{r, WORD CLOUDS}
+## word clouds for show with word cloud library
+
+wordcloud(
+  words=tweet_token_rt$word,
+  freq=tweet_token_rt$n,
+  max.words=20,
+  color='blue'
+)
+
+
+```
+
+## Sentiment Analysis
+
+### Sentiment Dictionaries
+
+tidytext package has 4 sentiment dictionaries:
+
+* Bing
+* Afinn
+* Loughran
+* NRC
+
+Each dictionary was created for particular purposes, so which one will be apply to your data depends on the nature of that data and what you are trying to learn from it.
+
+Bing
+
+```{r}
+get_sentiments('bing') %>%
+  count(sentiment) %>%
+  arrange(desc(n))
+```
+
+Afinn
+
+* generates error
+
+```{r, AFINN}
+# get_sentiments('afinn') %>%
+#   count(sentiment) %>%
+#   arrange(desc(n))
+```
+
+Loughran
+
+```{r, LOUGHRAN}
+get_sentiments('loughran') %>%
+  count(sentiment) %>%
+  arrange(desc(n))
+
+```
+
+NRC
+
+```{r, NRC}
+get_sentiments('nrc') %>%
+  count(sentiment) %>%
+  arrange(desc(n))
+```
+
+```{r}
+senti_count <- get_sentiments('nrc') %>%
+  count(sentiment) %>%
+  arrange(desc(n))
+
+ggplot(senti_count, aes(x=sentiment, y=n))+geom_col()+
+  coord_flip()+
+  labs(title='NRC Sentiments',
+       x='word count',
+       y='sentiment')
+```
+
+## Get sentiments for data set
+
+```{r}
+## joint sentiment dictionary with full data set
+## rows will be reduced because not every word matches what is in dictionary
+tweet_sentiments <- tweet_token_rt_all %>%
+  inner_join(get_sentiments('nrc'))
+
+## count sentiments -> taking into account rt vs nrt
+tweet_sentiment_counts <- tweet_sentiments %>% 
+  count(sentiment, rt) %>%
+  arrange(desc(n,rt))
+
+tweet_sentiment_counts
+
+```
+
+```{r}
+
+```
+
+
+Get top words for specific sentiments
+
+```{r}
+## filter for specified sentiment categories 
+tweet_sentiment_spec <- tweet_token %>%
+  inner_join(get_sentiments('nrc')) %>%
+  filter(sentiment %in% c('positive', 'negative', 'disgust'))
+## count top words in each category
+tweet_senti_count <- tweet_sentiment_spec %>%
+  count(word, sentiment) %>%
+  group_by(sentiment) %>% top_n(10, n) %>%
+  ungroup() %>%
+  mutate(word2=fct_reorder(word,n))
+
+```
+
+## Visualizing words by sentiment
+
+```{r}
+ggplot(tweet_senti_count, aes(x=word2, y=n, fill=sentiment))+
+  geom_col(show.legend=FALSE)+
+  facet_wrap(~sentiment, scales='free')+
+  coord_flip()+
+  labs(title='top words by sentiment',
+       x='words')
 ```
 
