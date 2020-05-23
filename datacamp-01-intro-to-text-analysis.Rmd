@@ -315,3 +315,4 @@ ggplot(tweet_senti_count, aes(x=word2, y=n, fill=sentiment))+
        x='words')
 ```
 
+
