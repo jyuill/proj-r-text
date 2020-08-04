@@ -11,8 +11,12 @@ knitr::opts_chunk$set(message=FALSE,
                       warning=FALSE)
 library(tidyverse)
 library(tidytext)
+library(tm) ## needed for dtm
+library(topicmodels)
 library(lubridate)
 library(wordcloud)
+
+theme_set(theme_bw())
 ```
 
 [Intro to Text Analysis in R](https://learn.datacamp.com/courses/introduction-to-text-analysis-in-r)
@@ -26,6 +30,15 @@ Using c&c twitter data, since don't have access to data from course, which is al
 ```{r, GET DATA}
 twitter_data <- read_csv('input/cnc-twitter.csv')
 twitter_data$postdate <- mdy(twitter_data$postdate)
+
+## create new tweet id to work around issues with long numbers being corrupted in processing
+id_pool <- as.integer(runif(10000, min=100000000, max=999999999)) ## generate numbers
+#length(unique(id_pool)) ## check number of uinques
+## take sample same size as number of data frame rows, with no replacement to ensure unique
+ids <- sample(id_pool, nrow(twitter_data), replace=FALSE)
+## create new id col for use later (DTM etc)
+twitter_data$twid <- ids
+
 ```
 
 ## Summarize
@@ -259,6 +272,10 @@ tidytext package has 4 sentiment dictionaries:
 
 Each dictionary was created for particular purposes, so which one will be apply to your data depends on the nature of that data and what you are trying to learn from it.
 
+A look at dictionaries based on sentiment categories and number of terms in each:
+
+(obvious limitation being that sentiment is assigned to individual words irrespective of context or combination)
+
 Bing
 
 ```{r}
@@ -356,4 +373,154 @@ ggplot(tweet_senti_count, aes(x=word2, y=n, fill=sentiment))+
        x='words')
 ```
 
+## Topic Modeling with LDA
 
+Latent Dirichlet allocation is used to go beyond individual works and understanding topics being referred to, and the sentiment associated with them.
+
+Each 'topic' is a collection of word probabilities for all of the unique words used in the corpus. In the case of twitter analysis, each tweet is its own document and the beta column contains the word probabilities.
+
+Unsupervised learning so it identifies words with highest probability of being grouped together and buckets these into a number of topic buckets, without identifying what the topic is. So it's not saying 'these are the topics' it's saying 'it looks like there is a topic with these words associated with it and another topic with these other words associated with it.' From there, you can figure out what the topics seem to be.
+
+### DTM
+
+Starting point is Document Term Matrix (DTM)
+
+```{r}
+## go back to original data and clean up, (stop_words2 is standard + custom from above)
+tweet_tok <- tweet_token_sep %>% select(twid, word) %>% anti_join(stop_words2)
+## create dtm object
+tweet_dtm <- tweet_tok %>% select(twid, word) %>% count(word, twid) %>%
+  cast_dtm(twid, word, n)
+tweet_dtm
+```
+
+```{r}
+## create matrix from DTM
+tweet_matrix <- as.matrix(tweet_dtm)
+## view a sample
+tweet_matrix[100:105,2000:2005]
+```
+
+### Run Topic Model
+
+#### Two Topics
+
+```{r}
+## run model to group terms into topics based on probability of occurenec
+
+lda_out <- LDA(
+  tweet_dtm,
+  k=2, ## set k to determine how many topics
+  method='Gibbs',
+  control=list(seed=42)
+)
+```
+
+```{r}
+## check out the structure
+glimpse(lda_out)
+```
+
+```{r}
+## organize into tidy format
+lda_topics <- lda_out %>%
+  tidy(matrix='beta')
+
+lda_topics %>% arrange(desc(beta))
+```
+
+```{r}
+## further org for prep for viz
+lda_topics_review <- lda_topics %>%
+  group_by(topic) %>%
+  top_n(15, beta) %>%
+  ungroup() %>%
+  mutate(term2=fct_reorder(term, beta))
+## visualize
+ggplot(lda_topics_review, aes(x=term2, y=beta, fill=as.factor(topic)))+geom_col(show.legend=FALSE)+
+  facet_wrap(~topic, scales='free')+ ## make sure scales are free
+  coord_flip()
+```
+
+#### Three Topics
+
+```{r}
+## may take some time depending on data size etc
+## specify number of topics
+knum <- 3
+
+## run model to group words by topic
+lda_out <- LDA(
+  tweet_dtm,
+  k=knum,
+  method='Gibbs',
+  control=list(seed=42)
+)
+
+## organize data in tidy format
+lda_topics <- lda_out %>%
+  tidy(matrix='beta')
+
+lda_topics %>% arrange(desc(beta))
+## further organization as prep for viz
+lda_topics_review <- lda_topics %>%
+  group_by(topic) %>%
+  top_n(15, beta) %>%
+  ungroup() %>%
+  mutate(term2=fct_reorder(term, beta))
+## visualize top terms by topic to help identify topics
+ggplot(lda_topics_review, aes(x=term2, y=beta, fill=as.factor(topic)))+geom_col(show.legend=FALSE)+
+  facet_wrap(~topic, scales='free')+
+  coord_flip()
+```
+
+#### Four Topics
+
+```{r}
+## may take some time depending on data size etc
+## specify number of topics
+knum <- 4
+
+## run model to group words by topic
+lda_out <- LDA(
+  tweet_dtm,
+  k=knum,
+  method='Gibbs',
+  control=list(seed=42)
+)
+
+## organize data in tidy format
+lda_topics <- lda_out %>%
+  tidy(matrix='beta')
+
+lda_topics %>% arrange(desc(beta))
+## further organization as prep for viz
+lda_topics_review <- lda_topics %>%
+  group_by(topic) %>%
+  top_n(15, beta) %>%
+  ungroup() %>%
+  mutate(term2=fct_reorder(term, beta))
+## visualize top terms by topic to help identify topics
+ggplot(lda_topics_review, aes(x=term2, y=beta, fill=as.factor(topic)))+geom_col(show.legend=FALSE)+
+  facet_wrap(~topic, scales='free')+
+  coord_flip()
+```
+
+#### Art of Topic Selection
+
+Determining topics is subjective process.
+
+* keep adding topics as long as they are coming up different
+* if start seeing repeat topics/terms, have gone too far
+* name the topics based on combination of high probability words
+
+## Further Resources
+
+DataCamp courses:
+
+* Sentiment Analysis in R: The Tidy Way https://learn.datacamp.com/courses/sentiment-analysis-in-r 
+* Topic Modeling in R https://learn.datacamp.com/courses/topic-modeling-in-r 
+
+Book
+
+* Text Mining with R (David Robinson, et al) https://www.tidytextmining.com/
